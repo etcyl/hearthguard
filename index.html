@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
+    <meta name="description" content="Manhose: grab the hose and save the burning village. A first-person firefighting game that runs in your browser.">
+    <title>Manhose</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b0605; overflow: hidden; }
+      #game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; }
+      #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                 background: radial-gradient(ellipse at 50% 80%, #3a1608 0%, #0b0605 70%);
+                 color: #f3e8d2; font: 15px/1.4 Georgia, "Times New Roman", serif; letter-spacing: .04em; }
+      #loading h1 { font: 700 72px/1 Georgia, "Times New Roman", serif; letter-spacing: .12em; margin: 0 0 6px; color: #fff3df; text-shadow: 0 0 24px #ff7a2a; }
+      #loading p { margin: 0 0 28px; color: #ff9a4a; }
+      #bar { width: min(420px, 70vw); height: 5px; background: #2a1409; border-radius: 3px; overflow: hidden; }
+      #fill { height: 100%; width: 0; background: linear-gradient(90deg, #ff6a1a, #ffd36b); transition: width .2s; }
+      #hint { margin-top: 24px; color: #8f7a63; font-size: 13px; }
+      #warning { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); max-width: 80vw; z-index: 2; }
+      #warning div { padding: 10px 14px; border-radius: 6px; margin-bottom: 6px; color: #111; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" tabindex="-1"></canvas>
+    <div id="loading"><h1>MANHOSE</h1><p>Hose the fires. Save the village.</p><div id="bar"><div id="fill"></div></div>
+      <div id="hint">First load downloads the game; later visits start faster.</div></div>
+    <div id="warning"></div>
+    <script>
+      var canvas = document.querySelector("#game");
+      function unityShowBanner(msg, type) {
+        var box = document.querySelector("#warning"), div = document.createElement("div");
+        div.textContent = msg;
+        div.style.background = type == "error" ? "#ff7a6b" : "#ffd36b";
+        box.appendChild(div);
+        if (type != "error") setTimeout(function () { box.removeChild(div); }, 5000);
+      }
+      var buildUrl = "Build";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebGL.data.unityweb",
+        frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Oathbreakers",
+        productName: "Manhose",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+        // Settings are kept in the browser between visits.
+        autoSyncPersistentDataPath: true,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      };
+      var script = document.createElement("script");
+      script.src = buildUrl + "/WebGL.loader.js";
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (p) {
+          document.querySelector("#fill").style.width = (100 * p) + "%";
+        }).then(function () {
+          document.querySelector("#loading").style.display = "none";
+          canvas.focus();
+        }).catch(function (message) { unityShowBanner(message, "error"); });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
